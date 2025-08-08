@@ -225,27 +225,6 @@ export default function Header() {
                 className="absolute right-0 mt-1 w-32 max-h-48 overflow-auto bg-white rounded shadow ring-1 ring-black ring-opacity-5 focus:outline-none z-50"
                 onClick={(e) => e.stopPropagation()}
               >
-                {LANGUAGES.map(({ code, label, country_code }) => (
-                  <li
-                    key={code}
-                    role="option"
-                    aria-selected={i18n.resolvedLanguage === code}
-                    tabIndex={0}
-                    className={`flex items-center gap-2 px-3 py-2 cursor-pointer ${
-                      i18n.resolvedLanguage === code ? 'font-semibold bg-indigo-100 text-indigo-700' : ''
-                    } hover:bg-indigo-600 hover:text-white`}
-                    onClick={() => changeLanguage(code)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        changeLanguage(code);
-                      }
-                    }}
-                  >
-                    <Flags code={country_code} className="w-5 h-5" />
-                    {label}
-                  </li>
-                ))}
               </ul>
             )}
           </div>
