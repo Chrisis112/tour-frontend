@@ -7,6 +7,7 @@ import { getI18nInstance } from '../i18n';
 import type { i18n as I18nType } from 'i18next';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import GoldLoadingAnimation from '../components/GoldLoadingAnimation'; // импорт компонента
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [i18nInstance, setI18nInstance] = useState<I18nType | null>(null);
@@ -19,13 +20,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     init();
   }, []);
 
-  // Пока i18n не инициализирован — можно показать простой лейаут без перевода,
-  // либо какой-то загрузочный экран
   if (!i18nInstance) {
     return (
       <html lang="ru">
         <body>
-          <div>Loading i18n...</div>
+          <GoldLoadingAnimation />
         </body>
       </html>
     );
