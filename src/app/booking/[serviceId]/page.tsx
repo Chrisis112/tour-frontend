@@ -451,7 +451,7 @@ export default function BookingPage() {
         />
 
         <div>
-          <label className="block mb-1">{t('duration', 'Длительность')}</label>
+          <label className="block mb-1">{t('duration_label', 'Длительность')}</label>
           <select
             className="w-full border rounded px-2"
             value={duration ?? ''}
@@ -464,14 +464,14 @@ export default function BookingPage() {
             <option value="">{t('select_duration', 'Выберите длительность')}</option>
             {service.variants.map((v) => (
               <option key={v.duration} value={v.duration}>
-                {t('duration_price', '{{duration}} мин – {{price}} €', { duration: v.duration, price: v.price })}
+                {t('duration_price', '{{duration}} min – {{price}} €', { duration: v.duration, price: v.price })}
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label className="block mb-1">{t('date', 'Дата')}</label>
+          <label className="block mb-1">{t('date_label', 'Дата')}</label>
           <DatePicker
             className="w-full border rounded px-2"
             selected={date ? new Date(date) : null}
@@ -489,7 +489,7 @@ export default function BookingPage() {
         </div>
 
         <div>
-          <label className="block mb-1">{t('time', 'Время')}</label>
+          <label className="block mb-1">{t('time_label', 'Время')}</label>
           <select
             id="time-slot-select"
             className="w-full border rounded px-2"
