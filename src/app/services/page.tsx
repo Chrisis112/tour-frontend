@@ -51,17 +51,6 @@ const countryList = [
   { code: 'DE', name: 'Germany' },
   { code: 'PL', name: 'Poland' },
 ];
-
-const DAY_NAMES: Record<string, string> = {
-  Mon: 'Пн',
-  Tue: 'Вт',
-  Wed: 'Ср',
-  Thu: 'Чт',
-  Fri: 'Пт',
-  Sat: 'Сб',
-  Sun: 'Вс',
-};
-
 function getLocalizedText(field: Record<string, string> | undefined, lang: string): string {
   if (!field) return '';
   const baseLang = lang.toLowerCase().split('-')[0];
