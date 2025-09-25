@@ -250,9 +250,7 @@ export default function BlogPage() {
 
         {/* Фильтры */}
         <div className="mb-6 flex gap-4 justify-center items-center">
-          <label htmlFor="country-select" className="font-semibold">
-            {t('labels.country', 'Страна:')}
-          </label>
+          
           <select
             id="country-select"
             value={selectedCountry}
@@ -263,17 +261,13 @@ export default function BlogPage() {
             className="rounded border px-3 py-1"
             aria-label={t('select_country', 'Выберите страну')}
           >
-            <option value="">{t('all_countries', 'Все страны')}</option>
+            <option value="">{t('labels.country', 'Все страны')}</option>
             {countries.map(country => (
               <option key={country} value={country}>
                 {country}
               </option>
             ))}
           </select>
-
-          <label htmlFor="city-select" className="font-semibold">
-            {t('labels.city', 'Город:')}
-          </label>
           <select
             id="city-select"
             value={selectedCity}
@@ -282,7 +276,7 @@ export default function BlogPage() {
             className="rounded border px-3 py-1"
             aria-label={t('select_city', 'Выберите город')}
           >
-            <option value="">{t('all_cities', 'Все города')}</option>
+            <option value="">{t('labels.city', 'Все города')}</option>
             {cities.map(city => (
               <option key={city} value={city}>
                 {city}

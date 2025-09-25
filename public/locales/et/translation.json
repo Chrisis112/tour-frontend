@@ -85,6 +85,8 @@
   "first_name_placeholder": "Eesnimi *",
   "last_name_placeholder": "Perekonnanimi *",
   "first_name": "Eesnimi",
+    "connect_telegram": "Ühendu Telegramiga",
+    "slot_busy": "Hõivatud",
   "blog": "Reisijuht",
   "last_name": "Perekonnanimi",
   "about_title": "Minust",

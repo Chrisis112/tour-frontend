@@ -344,63 +344,6 @@ export default function Header() {
         >
           <div className="px-4 py-4 space-y-2">
             {/* Выбор языка */}
-            <div ref={dropdownRef} className="relative">
-              <button
-                type="button"
-                aria-haspopup="listbox"
-                aria-expanded={dropdownOpen}
-                aria-label={t('language_selector', 'Выбор языка')}
-                className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full justify-center"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDropdownOpen((open) => !open);
-                }}
-              >
-                <Flags code={currentLang.country_code} className="w-5 h-5" />
-                <span className="whitespace-nowrap font-medium">{currentLang.label}</span>
-                <svg
-                  className={`w-4 h-4 transition-transform ${dropdownOpen ? 'rotate-180' : 'rotate-0'}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {dropdownOpen && (
-                <ul
-                  role="listbox"
-                  tabIndex={-1}
-                  className="absolute z-50 left-1/2 transform -translate-x-1/2 mt-1 w-40 max-h-60 overflow-auto bg-white rounded shadow ring-1 ring-black ring-opacity-5 focus:outline-none"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {LANGUAGES.map(({ code, label, country_code }) => (
-                    <li
-                      key={code}
-                      role="option"
-                      aria-selected={i18n.resolvedLanguage === code}
-                      tabIndex={0}
-                      className={`flex items-center gap-2 px-3 py-2 cursor-pointer ${
-                        i18n.resolvedLanguage === code ? 'font-semibold bg-indigo-100 text-indigo-700' : ''
-                      } hover:bg-indigo-600 hover:text-white`}
-                      onClick={() => changeLanguage(code)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          changeLanguage(code);
-                        }
-                      }}
-                    >
-                      <Flags code={country_code} className="w-5 h-5" />
-                      {label}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-
             <Link
               href="/services"
               className="block text-gray-700 hover:text-indigo-600 font-medium transition duration-200"

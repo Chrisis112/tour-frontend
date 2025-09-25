@@ -245,6 +245,7 @@
   "placeholder_description_lang": "opis ({{lang}})",
   "placeholder_title_lang": "tytuł ({{lang}})",
   "book_now": "Zarezerwuj",
+  "slot_busy": "Zajęty",
   "error_loading_massage_carousel": "Błąd ładowania usług dla karuzeli:",
   "book_rickshaw": "Zarezerwuj teraz",
   "price_label": "Ceny:",

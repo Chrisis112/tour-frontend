@@ -85,6 +85,7 @@
   "last_name_placeholder": "Pavardė *",
   "first_name": "Vardas",
   "last_name": "Pavardė",
+  "connect_telegram": "Prisijungti prie Telegram",
   "about_title": "Apie mane",
   "tourist_guide": "Turistinis gidas – geriausias jūsų asistentas kelionių ir istorijų pasaulyje",
   "blog": "Ceļvedis",
@@ -254,6 +255,7 @@
   "select_city": "Pasirinkite miestą",
   "rate_therapist": "Įvertinkite vairuotoją",
   "rate_client": "Įvertinkite klientą",
+  "slot_busy": "Aizņemts",
 
 "title": "Naudojimosi sąlygos",
   "company": "Įmonė Great One OÜ",

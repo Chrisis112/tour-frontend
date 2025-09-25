@@ -6,6 +6,7 @@ import Link from 'next/link';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import MassageCarousel, { Massage } from '../components/MassageCarousel';
+import GoldLoadingAnimation from '../components/GoldLoadingAnimation';
 
 export default function HomePage() {
   const { t, i18n } = useTranslation();
@@ -45,7 +46,7 @@ export default function HomePage() {
   if (loading) {
     return (
       <main className="flex flex-col items-center justify-center min-h-screen px-4 py-12 text-lg">
-        {t('loading', 'Загрузка...')}
+        <GoldLoadingAnimation/>
       </main>
     );
   }

@@ -9,6 +9,7 @@ import TherapistServicesList from '../../components/TherapistServicesList';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../hooks/useAuth';
 import Head from 'next/head';
+import GoldLoadingAnimation from '../../components/GoldLoadingAnimation';
 
 // Типы
 interface Variant {
@@ -50,17 +51,6 @@ const countryList = [
   { code: 'DE', name: 'Germany' },
   { code: 'PL', name: 'Poland' },
 ];
-
-const DAY_NAMES: Record<string, string> = {
-  Mon: 'Пн',
-  Tue: 'Вт',
-  Wed: 'Ср',
-  Thu: 'Чт',
-  Fri: 'Пт',
-  Sat: 'Сб',
-  Sun: 'Вс',
-};
-
 function getLocalizedText(field: Record<string, string> | undefined, lang: string): string {
   if (!field) return '';
   const baseLang = lang.toLowerCase().split('-')[0];
@@ -276,7 +266,7 @@ export default function ServicesPage() {
     return t('services_page_description_all', 'Обширный каталог услуг и специалистов у вас под рукой.');
   }, [selectedCity, selectedCountry, t]);
 
-  if (loading) return <div className="text-center">{t('loading', 'Загрузка...')}</div>;
+  if (loading) return <div className="text-center"><GoldLoadingAnimation/></div>;
   if (error) return <p className="text-center text-red-600 mb-4">{error}</p>;
 
   return (
@@ -393,7 +383,7 @@ export default function ServicesPage() {
                     </div>
                     {service.address && (
   <div className="mb-4 text-sm text-gray-700">
-    <strong>Адрес: </strong>
+    <strong>{t('address_placeholder', 'Забронировать')}</strong>
     <span title={service.address} className="block truncate max-w-full">
       {service.address}
     </span>
@@ -406,14 +396,14 @@ export default function ServicesPage() {
                     </div>
 
                     <div aria-label="work schedule" className="mt-2 mb-2">
-                      <h3 className="font-semibold text-sm">{t('working_hours', 'Рабочее время')}</h3>
+                      <h3 className="font-semibold text-sm">{t('working_hours_label', 'Рабочее время')}</h3>
                       {service.availability.length === 0 ? (
                         <p className="text-xs text-gray-500">{t('no_information', 'Нет информации')}</p>
                       ) : (
                         <div className="flex flex-wrap gap-1 text-xs text-gray-700">
                           {service.availability.map((day) => (
                             <span key={day.dayOfWeek} className="rounded bg-gray-100 px-1 py-0.5">
-                              <b>{DAY_NAMES[day.dayOfWeek] ?? day.dayOfWeek}:</b>{' '}
+                              <b>{t(`day_names.${day.dayOfWeek}`, day.dayOfWeek)}:</b>{' '}
                               {day.timeSlots.length > 0
                                 ? day.timeSlots.map((slot) => `${slot.start}–${slot.end}`).join(', ')
                                 : '—'}

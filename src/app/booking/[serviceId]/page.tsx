@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/style.css';
@@ -42,7 +42,7 @@ interface Service {
   variants: Variant[];
   availability: DayAvailability[];
   therapist: Therapist;
-  address?: string; // Добавлено
+  address?: string;
 }
 
 type BusySlot = {
@@ -70,8 +70,8 @@ function intervalsOverlap(s1: number, e1: number, s2: number, e2: number) {
 function getAllowedWeekDays(service: Service | null) {
   if (!service?.availability) return [];
   return service.availability
-    .map(a => DAY_MAP.indexOf(a.dayOfWeek))
-    .filter(i => i !== -1);
+    .map((a) => DAY_MAP.indexOf(a.dayOfWeek))
+    .filter((i) => i !== -1);
 }
 
 function isSlotAtLeastNHoursAhead(slotStart: string, n: number, dateStr: string) {
@@ -94,9 +94,7 @@ function validateEmail(email: string) {
 
 function getLocale(field: string | Record<string, string> | undefined, lang: string): string {
   if (!field) return '';
-
   if (typeof field === 'string') return field;
-
   lang = lang.toLowerCase().split('-')[0];
   if (typeof field[lang] === 'string' && field[lang].trim() !== '') return field[lang];
   if (typeof field['en'] === 'string' && field['en'].trim() !== '') return field['en'];
@@ -106,7 +104,7 @@ function getLocale(field: string | Record<string, string> | undefined, lang: str
   return '';
 }
 
-// Type guard для BusySlot, избавляет от any
+// Type guard для BusySlot
 function isBusySlot(obj: unknown): obj is BusySlot {
   return (
     typeof obj === 'object' &&
@@ -123,6 +121,8 @@ export default function BookingPage() {
   const { user } = useAuth();
   const isLoggedIn = !!user;
   const { serviceId } = useParams() as { serviceId: string };
+  const router = useRouter();
+
   const [price, setPrice] = useState<number>();
   const [service, setService] = useState<Service | null>(null);
   const [duration, setDuration] = useState<number>();
@@ -130,6 +130,7 @@ export default function BookingPage() {
   const [availableSlots, setAvailableSlots] = useState<{ start: string; end: string; busy: boolean }[]>([]);
   const [busySlots, setBusySlots] = useState<BusySlot[]>([]);
   const [timeSlot, setTimeSlot] = useState<string>('');
+  const [fullyBookedDates, setFullyBookedDates] = useState<string[]>([]);
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -145,34 +146,29 @@ export default function BookingPage() {
 
   const currentLang = i18n.language ? i18n.language.split('-')[0] : 'en';
 
-  // Загрузка сервиса и установка ид терапевта + адреса
   useEffect(() => {
     if (!serviceId) return;
-
     axios
       .get(`${process.env.NEXT_PUBLIC_API_URL}/services/${serviceId}`)
-      .then(res => {
+      .then((res) => {
         setService(res.data);
-
         if (res.data?.therapistId) {
           setTherapistId(res.data.therapistId);
         } else {
           setTherapistId('');
         }
-
         if (res.data?.address) {
           setAddress(res.data.address);
         } else {
           setAddress('');
         }
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(err);
         setError(t('error_loading_service', 'Ошибка загрузки услуги'));
       });
   }, [serviceId, t]);
 
-  // Заполняем поля пользователя, если залогинен
   useEffect(() => {
     if (isLoggedIn) {
       if (firstName !== user?.firstName) setFirstName(user?.firstName ?? '');
@@ -185,41 +181,36 @@ export default function BookingPage() {
     }
   }, [isLoggedIn, user?.firstName, user?.lastName, user?.email]);
 
-  // Загрузка занятых слотов
+  // Fetch busy slots for selected date
   useEffect(() => {
     if (!service || !date) {
       setBusySlots([]);
       return;
     }
-
     axios
-  .get(`${process.env.NEXT_PUBLIC_API_URL}/bookings/slots`, {
-    params: { serviceId: service._id, date },
-  })
-  .then(res => {
-    const busyArrRaw = res.data.busyIntervals ?? res.data.busySlots ?? [];
-
-    const busyArr: BusySlot[] = busyArrRaw
-      .map((interval: unknown): BusySlot | null => (isBusySlot(interval) ? interval : null))
-      // Explicit type annotation on slot parameter:
-      .filter((slot: BusySlot | null): slot is BusySlot => slot !== null);
-
-    setBusySlots(busyArr.sort((a, b) => a.startMin - b.startMin));
-  })
-  .catch(err => {
-    console.error('Ошибка загрузки busy slots:', err);
-    setBusySlots([]);
-  });
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/bookings/slots`, {
+        params: { serviceId: service._id, date },
+      })
+      .then((res) => {
+        const busyArrRaw = res.data.busyIntervals ?? res.data.busySlots ?? [];
+        const busyArr: BusySlot[] = busyArrRaw
+          .map((interval: unknown): BusySlot | null => (isBusySlot(interval) ? interval : null))
+          .filter((slot: BusySlot | null): slot is BusySlot => slot !== null);
+        setBusySlots(busyArr.sort((a, b) => a.startMin - b.startMin));
+      })
+      .catch((err) => {
+        console.error('Ошибка загрузки busy slots:', err);
+        setBusySlots([]);
+      });
   }, [service, date]);
 
-  // Установка дефолтной длительности и цены
   useEffect(() => {
     if (service && service.variants.length > 0) {
       if (!duration) {
         setDuration(service.variants[0].duration);
         setPrice(service.variants[0].price);
       } else {
-        const variant = service.variants.find(v => v.duration === duration);
+        const variant = service.variants.find((v) => v.duration === duration);
         if (variant) {
           setPrice(variant.price);
         }
@@ -227,31 +218,76 @@ export default function BookingPage() {
     }
   }, [service, duration]);
 
-  // Обновление даты при изменении сервиса и длительности
+  // Fetch busy slots for range of dates and compute fully booked dates
   useEffect(() => {
     if (!service || !duration) return;
 
     const allowedDays = getAllowedWeekDays(service);
-    const isAllowedDate = (d: Date) => allowedDays.includes(d.getDay());
-
-    if (!date) {
-      for (let i = 0; i <= 30; i++) {
-        const dt = new Date();
-        dt.setDate(dt.getDate() + i);
-        if (isAllowedDate(dt)) {
-          setDate(formatDateLocal(dt));
-          break;
-        }
-      }
-    } else {
-      const dt = new Date(date);
-      if (!isAllowedDate(dt)) {
-        setDate('');
-      }
+    const datesToCheck: string[] = [];
+    const from = new Date();
+    for (let i = 0; i < 62; i++) {
+      const d = new Date(from);
+      d.setDate(d.getDate() + i);
+      if (allowedDays.includes(d.getDay())) datesToCheck.push(formatDateLocal(d));
     }
+
+    // Запрос всех busy слотов для диапазона дат и текущей длительности
+    axios
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/bookings/slots-range`, {
+        params: { serviceId: service._id, dates: datesToCheck.join(','), duration },
+      })
+      .then((res) => {
+        // Ожидается объект { [date]: BusySlot[] }
+        const busyByDate: Record<string, BusySlot[]> = res.data;
+        const fullDates: string[] = [];
+
+        datesToCheck.forEach((dateStr) => {
+          const dayNum = new Date(dateStr).getDay();
+          const dayStr = DAY_MAP[dayNum];
+          const availability = service.availability.find((d) => d.dayOfWeek === dayStr);
+
+          let hasFree = false;
+          if (availability) {
+            for (const interval of availability.timeSlots) {
+              let slotStart = interval.start;
+              while (timeToMinutes(slotStart) + duration <= timeToMinutes(interval.end)) {
+                const slotEnd = addMinutes(slotStart, duration);
+                const startMin = timeToMinutes(slotStart);
+                const endMin = timeToMinutes(slotEnd) + 30;
+                const busyArr = busyByDate[dateStr] || [];
+                const busy = busyArr.some((bs) => intervalsOverlap(startMin, endMin, bs.startMin, bs.endMin));
+                const allowed = !busy && isSlotAtLeastNHoursAhead(slotStart, 3, dateStr);
+                if (allowed) {
+                  hasFree = true;
+                  break;
+                }
+                slotStart = addMinutes(slotStart, 5);
+              }
+              if (hasFree) break;
+            }
+          }
+          if (!hasFree) fullDates.push(dateStr);
+        });
+
+        setFullyBookedDates(fullDates);
+
+        // Если выбранная дата занята, переключить на ближайшую свободную
+        if (date && fullDates.includes(date)) {
+          for (const d of datesToCheck) {
+            if (!fullDates.includes(d)) {
+              setDate(d);
+              break;
+            }
+          }
+        }
+      })
+      .catch((err) => {
+        console.error('Ошибка загрузки busy slots для диапазона:', err);
+        setFullyBookedDates([]);
+      });
   }, [service, duration, date]);
 
-  // Вычисление доступных слотов
+  // Вычисление доступных слотов для выбранной даты
   useEffect(() => {
     if (!service || !date || !duration) {
       setAvailableSlots([]);
@@ -259,13 +295,12 @@ export default function BookingPage() {
     }
     const dayNum = new Date(date).getDay();
     const dayStr = DAY_MAP[dayNum];
-    const dayAvailability = service.availability.find(d => d.dayOfWeek === dayStr);
+    const dayAvailability = service.availability.find((d) => d.dayOfWeek === dayStr);
     if (!dayAvailability) {
       setAvailableSlots([]);
       return;
     }
     const step = 5;
-
     const slots: { start: string; end: string; busy: boolean }[] = [];
     for (const interval of dayAvailability.timeSlots) {
       let slotStart = interval.start;
@@ -273,28 +308,31 @@ export default function BookingPage() {
         const slotEnd = addMinutes(slotStart, duration);
         const startMin = timeToMinutes(slotStart);
         const endMin = timeToMinutes(slotEnd) + 30;
-
-        const busy = busySlots.some(bs => intervalsOverlap(startMin, endMin, bs.startMin, bs.endMin));
+        const busy = busySlots.some((bs) => intervalsOverlap(startMin, endMin, bs.startMin, bs.endMin));
         const allowed = !busy && isSlotAtLeastNHoursAhead(slotStart, 3, date);
-
         slots.push({
           start: slotStart,
           end: slotEnd,
           busy: !allowed,
         });
-
         slotStart = addMinutes(slotStart, step);
       }
     }
     setAvailableSlots(slots);
   }, [service, date, duration, busySlots]);
 
+  // Фильтрация доступных дат в DatePicker с учётом fullyBookedDates
+  function filterAllowedDate(d: Date) {
+    if (!service) return false;
+    const allowedDays = getAllowedWeekDays(service);
+    const dateStr = formatDateLocal(d);
+    return allowedDays.includes(d.getDay()) && !fullyBookedDates.includes(dateStr);
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
     setError(null);
     setPaymentError(null);
-
     if (!firstName || !lastName || !phone || !email || !address || !date || !duration || !timeSlot || !therapistId) {
       setError(t('fill_required_fields', 'Пожалуйста, заполните все обязательные поля'));
       return;
@@ -303,18 +341,15 @@ export default function BookingPage() {
       setError(t('invalid_email', 'Некорректный email'));
       return;
     }
-    const selSlot = availableSlots.find(s => s.start === timeSlot);
+    const selSlot = availableSlots.find((s) => s.start === timeSlot);
     if (!selSlot || selSlot.busy) {
       setError(t('slot_unavailable', 'Выбранный интервал времени занят или недоступен'));
       return;
     }
-
     setLoading(true);
-
     try {
       const token = localStorage.getItem('token');
       const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
-
       const { data } = await axios.post(
         `${process.env.NEXT_PUBLIC_API_WS_URL}/api/create-checkout-session`,
         {
@@ -333,9 +368,8 @@ export default function BookingPage() {
         },
         { headers }
       );
-
       if (data?.url) {
-        window.location.href = data.url; // перенаправление на Stripe Checkout
+        window.location.href = data.url;
       } else {
         setError('Ошибка оплаты: сессия не получена');
       }
@@ -374,21 +408,27 @@ export default function BookingPage() {
         />
       )}
 
-      <div className="flex items-center gap-2 mb-4">
+      <button
+        type="button"
+        className="flex items-center gap-2 mb-4 w-full text-left hover:bg-gray-50 rounded transition"
+        style={{ cursor: 'pointer' }}
+        onClick={() => router.push(`/therapist/${service.therapist._id}`)}
+        aria-label={`${getLocale(service.therapist.firstName, currentLang)} ${getLocale(service.therapist.lastName, currentLang)}`}
+      >
         <img
           src={service.therapist.photoUrl ?? '/default-avatar.png'}
           alt={`${getLocale(service.therapist.firstName, currentLang)} ${getLocale(service.therapist.lastName, currentLang)}`}
           className="w-10 h-10 rounded-full border object-cover"
         />
         <div>
-          <div>
+          <div className="text-indigo-600 font-semibold">
             {getLocale(service.therapist.firstName, currentLang)} {getLocale(service.therapist.lastName, currentLang)}
           </div>
           <div className="text-xs text-gray-500">
             {t('rating_label', 'Рейтинг')}: {service.therapist.rating ?? '—'}
           </div>
         </div>
-      </div>
+      </button>
 
       <p className="mb-4 whitespace-pre-wrap">{getLocale(service.description, currentLang)}</p>
 
@@ -451,7 +491,7 @@ export default function BookingPage() {
         />
 
         <div>
-          <label className="block mb-1">{t('duration', 'Длительность')}</label>
+          <label className="block mb-1">{t('duration_label', 'Длительность')}</label>
           <select
             className="w-full border rounded px-2"
             value={duration ?? ''}
@@ -464,14 +504,14 @@ export default function BookingPage() {
             <option value="">{t('select_duration', 'Выберите длительность')}</option>
             {service.variants.map((v) => (
               <option key={v.duration} value={v.duration}>
-                {t('duration_price', '{{duration}} мин – {{price}} €', { duration: v.duration, price: v.price })}
+                {t('duration_price', '{{duration}} min – {{price}} €', { duration: v.duration, price: v.price })}
               </option>
             ))}
           </select>
         </div>
 
         <div>
-          <label className="block mb-1">{t('date', 'Дата')}</label>
+          <label className="block mb-1">{t('date_label', 'Дата')}</label>
           <DatePicker
             className="w-full border rounded px-2"
             selected={date ? new Date(date) : null}
@@ -480,7 +520,7 @@ export default function BookingPage() {
               else setDate('');
               setTimeSlot('');
             }}
-            filterDate={(d) => (service ? getAllowedWeekDays(service).includes(d.getDay()) : false)}
+            filterDate={filterAllowedDate}
             minDate={new Date()}
             placeholderText={t('select_date', 'Выберите дату')}
             aria-label={t('select_date', 'Выберите дату')}
@@ -489,7 +529,7 @@ export default function BookingPage() {
         </div>
 
         <div>
-          <label className="block mb-1">{t('time', 'Время')}</label>
+          <label className="block mb-1">{t('time_label', 'Время')}</label>
           <select
             id="time-slot-select"
             className="w-full border rounded px-2"
